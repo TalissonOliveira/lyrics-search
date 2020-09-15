@@ -6,7 +6,13 @@ const prevAndNextContainer = document.querySelector('#prev-and-next-container')
 const apiURL = `https://api.lyrics.ovh`
 
 const getMoreSongs = async url => {
-    const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`)
+    const options = {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'default'
+    }
+
+    const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`, options)
     const data = await response.json()
     console.log(data)
     
@@ -63,7 +69,15 @@ const fetchLyrics = async (artist, songTitle) => {
     const response = await fetch(`${apiURL}/v1/${artist}/${songTitle}`)
     const data = await response.json()
 
+    const lyrics = data.lyrics.replace(/(\r\n|\r|\n)/g, '<br>') // /(\r\n)/ -> RegEx para pegar todos os Carriage return(\r) que em seguida tenha um Line Feed(\n) (quebra de linhas e novas linhas) ou Carriege return isolado(|\r) ou Line Feed isolado(|\n) g no final para capturar todas as ocorrências desse grupo na string
+
     console.log(data)
+    songsContainer.innerHTML = `
+        <li class="lyrics-container">
+            <h2><strong>${songTitle}</strong> - ${artist}</h2>
+            <p class="lyrics">${lyrics}</p>
+        </li>
+    `
 }
 
 // Evento para ouvir os clicks na página
@@ -74,6 +88,9 @@ songsContainer.addEventListener('click', event => {
         // Obter os valores dos atributos data-artist e data-song-title
         const artist = clickedElement.getAttribute('data-artist')
         const songTitle = clickedElement.getAttribute('data-song-title')
+
+        // Remover conteúdo do prev and next container (botões prev e next)
+        prevAndNextContainer.innerHTML = ''
 
         fetchLyrics(artist, songTitle)
     }
